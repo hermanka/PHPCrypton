@@ -33,7 +33,7 @@ public:
      */
      
      
-
+    // sekarang untuk script yang di decrypt harus diawali dan diakhiri dengan tag php
         
     static void decrypt(Php::Parameters &params)
     {
@@ -43,7 +43,13 @@ public:
         // if(type=="caesar"){
         //     Php::out << Php::eval(caesar_dec(msg)) << std::endl;
         // } else if (type=="aes-256-cbc"){
-            Php::out << Php::eval(openssl_dec(type, msg)) << std::endl;
+            // Php::out << Php::eval(openssl_dec(type, msg)) << std::endl;
+            // Php::out << openssl_dec(type, msg) << std::endl;
+            
+
+            // add for decrypt from file
+            std::string code = " ?>" + openssl_dec(type, msg) + "<?php ";
+            Php::out << Php::eval(code) << std::endl;
         // }
     }
 
@@ -58,6 +64,27 @@ public:
         // }
     }
 
+    // how to call from cli
+    // php -r 'PHPCrypton::encodeFile("bf-cbc", "form.php");'
+
+    static void encrypt_file(Php::Parameters &params)
+    {
+        // @todo add implementation
+        std::string type = params[0];
+        std::string file = params[1];
+
+        std::string code = Php::call("file_get_contents", file, true);
+        // if(type=="aes-256-cbc"){
+
+        //output to terminal
+        //Php::out << openssl_enc(type, code) << std::endl;
+
+        std::string enc_code = "<?php PHPCrypton::decode('"+type+"', '"+openssl_enc(type, code)+"'); ?>";
+
+        
+        Php::out << Php::call("file_put_contents", file + ".enc", enc_code) << std::endl;
+        // }
+    }
 
     static std::string caesar_dec(std::string message){
         int i, key = 5;
@@ -141,6 +168,8 @@ public:
 
 };
 
+
+// below is old function before modulated
 void encryption_function()
 {
 
@@ -238,6 +267,7 @@ extern "C" {
         Php::Class<Cryptix> myCrypt("PHPCrypton");
         myCrypt.method<&Cryptix::decrypt>("decode");
         myCrypt.method<&Cryptix::encrypt>("encode");
+        myCrypt.method<&Cryptix::encrypt_file>("encodeFile");
         // myCrypt.method<&Cryptix::aes_dec>("dec");
         extension.add(std::move(myCrypt));
 
