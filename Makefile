@@ -31,7 +31,7 @@ NAME				=	phpcrypton
 
 INI_DIR				=	/etc/php/7.2/mods-available/
 INI_DIR_CLI			=	/etc/php/7.2/cli/conf.d
-INI_DIR_APACHE			=	/etc/php/7.2/apache2/conf.d
+INI_DIR_APACHE		=	/etc/php/7.2/apache2/conf.d
 
 #INI_DIR1			=	/etc/php/7.0/mods-available/
 #INI_DIR2			=	/etc/php/7.4/mods-available/
