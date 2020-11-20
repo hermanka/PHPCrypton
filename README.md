@@ -24,7 +24,9 @@
 ## Important!
 
 Don't forget to change firstkey and secondkey in main.cpp file.
+
 Change INI_DIR in Makefile according to your machine
+
 make sure you have enable php mod using
         
         phpenmod phpcrypton
