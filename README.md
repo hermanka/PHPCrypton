@@ -1,5 +1,8 @@
 # PHPCrypton
 
+Encrypt your PHP source code using PHPCrypton. Like IonCube Loader but it's free...
+
+
 ## How to Compile
 
 ### Requirement before compile : Install PHP-CPP
