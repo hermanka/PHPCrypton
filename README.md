@@ -35,26 +35,26 @@ make sure you have enable php mod using
 ## Encrypt php file
 
 ```php
-        <?php
+<?php
 
-                PHPCrypton::encodeFile("bf-cbc", "loop.php");
+        PHPCrypton::encodeFile("bf-cbc", "loop.php");
 
-        ?>
+?>
 ```
 
 ## Encrypt code
 
 ```php
-        <?php
+<?php
 
-                $code = '$x = 1;        
-                        while($x <= 5) {
-                        echo "The number is: $x <br>";
-                        $x++;
-                        }';
-                PHPCrypton::encode("bf-cbc", $code);
+        $code = '$x = 1;        
+                while($x <= 5) {
+                echo "The number is: $x <br>";
+                $x++;
+                }';
+        PHPCrypton::encode("bf-cbc", $code);
 
-        ?>
+?>
 ```
 
 ## Encryption algorithm choices
