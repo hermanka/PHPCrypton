@@ -42,17 +42,18 @@ make sure you have enable php mod using
 
 ## Encrypt code
 
+````php
         <?php
 
-        $code = '$x = 1;
-        
-        while($x <= 5) {
-        echo "The number is: $x <br>";
-        $x++;
-        }';
+        $code = '$x = 1;        
+                while($x <= 5) {
+                echo "The number is: $x <br>";
+                $x++;
+                }';
         PHPCrypton::encode("bf-cbc", $code);
 
         ?>
+````
 
 ## Encryption algorithm choices
 
