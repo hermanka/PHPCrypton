@@ -32,3 +32,30 @@ make sure you have enable php mod using
         phpenmod phpcrypton
 
 
+## Encrypt php file
+
+        <?php
+
+        PHPCrypton::encodeFile("bf-cbc", "loop.php");
+
+        ?>
+
+## Encrypt code
+
+        <?php
+
+        $code = '$x = 1;
+        
+        while($x <= 5) {
+        echo "The number is: $x <br>";
+        $x++;
+        }';
+        PHPCrypton::encode("bf-cbc", $code);
+
+        ?>
+
+## Encryption algorithm choices
+
+Use any open ssl cipher method https://www.php.net/manual/en/function.openssl-get-cipher-methods.php[https://www.php.net/manual/en/function.openssl-get-cipher-methods.php](https://www.php.net/manual/en/function.openssl-get-cipher-methods.php)
+
+
