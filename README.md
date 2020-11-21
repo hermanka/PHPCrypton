@@ -59,6 +59,6 @@ make sure you have enable php mod using
 
 ## Encryption algorithm choices
 
-Use any open ssl cipher method https://www.php.net/manual/en/function.openssl-get-cipher-methods.php [https://www.php.net/manual/en/function.openssl-get-cipher-methods.php](https://www.php.net/manual/en/function.openssl-get-cipher-methods.php)
+Use any open ssl cipher method [https://www.php.net/manual/en/function.openssl-get-cipher-methods.php](https://www.php.net/manual/en/function.openssl-get-cipher-methods.php)
 
 
