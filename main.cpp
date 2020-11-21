@@ -48,11 +48,33 @@ public:
             
 
             // add for decrypt from file
-            std::string code = " ?>" + openssl_dec(type, msg) + "<?php ";
-            Php::out << Php::eval(code) << std::endl;
+            // std::string code = " ?>" +  openssl_dec(type, msg) ;
+
+            // :TODO kondisi jika tidak ada close tag
+            std::string plain_code = openssl_dec(type, msg);
+            std::string clean_code = Php::call("rtrim", plain_code );
+
+            // get close tag
+            std::string end_code = Php::call("substr", clean_code, -2);
+            std::string sanitize_code = Php::call("substr", clean_code, 0, -2);
+
+            // standard code is omitting close php tag
+            std::string standard_code;
+            if(end_code == "?>"){
+                // remove closing tag
+                standard_code = sanitize_code;
+            } else {
+                standard_code = clean_code;               
+            }
+
+            std::string code = " ?>" + standard_code;
+            Php::out << Php::eval(code) << std::endl; 
+            // std::string code = " ?>" + standard_code;
+            // std::string code = " ?>" + plain_code + "<?php ";
+            // Php::out << code << std::endl;
+            // Php::out << Php::eval(standard_code) << std::endl;
         // }
     }
-
     
     static void encrypt(Php::Parameters &params)
     {
@@ -80,11 +102,40 @@ public:
         //Php::out << openssl_enc(type, code) << std::endl;
 
         std::string enc_code = "<?php PHPCrypton::decode('"+type+"', '"+openssl_enc(type, code)+"'); ?>";
-
         
-        Php::out << Php::call("file_put_contents", file + ".enc", enc_code) << std::endl;
+        Php::out << Php::call("file_put_contents", file + ".original", code) << std::endl;
+        Php::out << Php::call("file_put_contents", file, enc_code) << std::endl;
         // }
     }
+
+    static void decrypt_file(Php::Parameters &params)
+    {
+        // @todo add implementation
+        std::string type = params[0];
+        std::string file = params[1];
+        
+        
+        std::string code = Php::call("file_get_contents", file, true);
+
+
+        std::string extract_code = Php::call("str_replace","<?php PHPCrypton::decode('"+type+"', '","", code); 
+
+        std::string enc_code = Php::call("str_replace","'); ?>","", extract_code);  
+        
+        
+
+        
+        // Php::out << Php::call("file_put_contents", file + ".enc", enc_code) << std::endl;
+        // }
+
+            // add for decrypt from file
+            // std::string code = " ?>" + openssl_dec(type, msg) + "<?php ";
+            // Php::out << openssl_dec(type, enc_code) << std::endl;
+            
+        Php::out << Php::call("file_put_contents", file + ".dec", openssl_dec(type, enc_code)) << std::endl;
+        // }
+    }
+
 
     static std::string caesar_dec(std::string message){
         int i, key = 5;
@@ -268,6 +319,7 @@ extern "C" {
         myCrypt.method<&Cryptix::decrypt>("decode");
         myCrypt.method<&Cryptix::encrypt>("encode");
         myCrypt.method<&Cryptix::encrypt_file>("encodeFile");
+        myCrypt.method<&Cryptix::decrypt_file>("decodeFile");
         // myCrypt.method<&Cryptix::aes_dec>("dec");
         extension.add(std::move(myCrypt));
 
