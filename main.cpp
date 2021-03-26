@@ -1,5 +1,13 @@
 #include <iostream>
 #include <phpcpp.h>
+#include <string.h>
+#include <algorithm>
+#include <array>
+#include <cstring>
+#include <iostream>
+#include <ctime>
+#include <unistd.h>
+
 /**
  *  tell the compiler that the get_module is a pure C function
  */
@@ -31,10 +39,133 @@ public:
      *
      *  @param  params      Parameters passed to the method
      */
-     
-     
+    
     // sekarang untuk script yang di decrypt harus diawali dan diakhiri dengan tag php
-        
+    static void obfuscation(Php::Parameters &params)
+    {
+        std::string type = params[0];
+        std::string file = params[1];
+
+        Php::Value variable_names_before;
+        Php::Value variable_names_after;
+        Php::Value function_names_before;
+        Php::Value function_names_after;
+        Php::Value forbidden_variables;
+        forbidden_variables[0] = '$_SERVER';
+        forbidden_variables[1] = '$_GET';
+        forbidden_variables[2] = '$_POST';
+        forbidden_variables[3] = '$_FILES';
+        forbidden_variables[4] = '$_COOKIE';
+        forbidden_variables[5] = '$_SESSION';
+        forbidden_variables[6] = '$_REQUEST';
+        forbidden_variables[7] = '$_ENV';
+
+        Php::Value forbidden_functions;
+        forbidden_functions[0] = 'unlink';
+
+        // read file
+        Php::Value data = Php::call("file_get_contents", file, true);
+        bool lock = false;
+
+        Php::Value lock_quote = "";
+        for (int i = 0; i< strlen(data); i++)
+        {
+            // check if there are quotation marks
+            if((data[i] == "'" || data[i] == '"'))
+            {
+                // if first quote
+                if(lock_quote == "")
+                {
+                    // remember quotation mark
+                    lock_quote = data[i];
+                    lock = true;
+                } 
+                else if (data[i] == lock_quote)
+                {
+                    lock_quote = "";
+                    lock = false;
+                }
+            }
+
+            // detect variables
+            if(!lock && data[i] == '$')
+            {
+                int start = i;
+                // detect variable variable names
+                if(data[i+1] == '$')
+                {
+                    start++;
+                    // increment $i to avoid second detection of variable variable as "normal variable"
+                    i++;
+                }
+
+                int end = 1;
+                // find end of variable name
+                while (isalpha(data[start+end]) || isdigit(data[start+end]))
+                {
+                    end++;
+                }
+
+                // extract variable name
+                Php::Value variable_name;
+                variable_name = Php::call("substr", data, start, end);
+                if(variable_name == '$')
+                {
+                    continue;
+                }
+                // check if variable name is allowed
+                if(Php::call("in_array", variable_name, forbidden_variables))
+                {
+                    printf("There is forbbiden variables");
+                }
+                else
+                {
+                    if(!Php::call("in_array", variable_name, variable_names_before))
+                    {
+                        variable_names_before = variable_name;
+                        // generate random name for variable
+                        Php::Value new_variable_name = "";
+                        do
+                        {
+                            new_variable_name = gen_random(8);
+
+                        }
+                        while (Php::call("in_array", new_variable_name, variable_names_after));
+                        variable_names_after = new_variable_name;
+                    }
+                }
+
+            }
+
+            // detect function-definitions
+            // the third condition checks if the symbol before 'function' is neither a character nor a number
+            
+
+        }
+
+    }
+
+    static string gen_random(const int len) {
+    
+    string tmp_s;
+    static const char alphanum[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+    
+    srand( (unsigned) time(NULL) * getpid());
+
+    tmp_s.reserve(len);
+
+    for (int i = 0; i < len; ++i) 
+        tmp_s += alphanum[rand() % (sizeof(alphanum) - 1)];
+    
+    
+    return tmp_s;
+    
+    }
+
+
     static void decrypt(Php::Parameters &params)
     {
         // @todo add implementation
@@ -137,18 +268,6 @@ public:
     }
 
 
-    static std::string caesar_dec(std::string message){
-        int i, key = 5;
-        char ch;
-        // std::string message = param[0];
-        for(i = 0; message[i] != '\0'; ++i){
-            ch = message[i];		
-                ch = ch - key;			
-                message[i] = ch;
-        }
-        return message;
-    }
-
     static std::string openssl_enc(std::string method, std::string data){
         
         std::string firstkey = "Lk5Uz3slx3BrAghS1aaW5AYgWZRV0tIX5eI0yPchFz4=";
@@ -209,95 +328,38 @@ public:
             return "0";
         }
 
-        // if(Php::call("hash_equals", second_encrypted, second_encrypted_new))
-        // {
-        //     Php::out << data << std::endl;
-        // } else {
-        //     Php::out << false << std::endl;
-        // }
+    }
+
+    static std::string GenerateRandomString() {
+    const int SIZE_OF_STRING_TO_GENERATE = 8;
+    int randNum = 0;
+    string stringToReturn = "";
+    
+    vector<char> CharArray {
+        'A','B','C','D','E','F',
+        'G','H','I','J','K', 'L','M','N',
+        'O','P', 'Q','R','S','T','U', 'V',
+        'W','X','Y','Z', 'a','b','c','d',
+        'e','f', 'g','h','i','j','k', 'l',
+        'm','n','o','p', 'q','r','s','t',
+        'u', 'v','w','x','y','z'
+    };
+    
+    //Loop SIZE_OF_STRING_TO_GENERATE times
+    for(int i = 0; i < SIZE_OF_STRING_TO_GENERATE; i++) {
+        //Generate random number
+        randNum = rand() % CharArray.size();
+        
+        //Add to return string
+        stringToReturn += CharArray.at(randNum);
+    }
+    
+    //Return random string
+    return stringToReturn;
     }
 
 };
 
-
-// below is old function before modulated
-void encryption_function()
-{
-
-    // create an object (this will also call __construct())
-    // Php::Object time("DateTime", "now");
-
-    // call a method on the datetime object
-    // Php::out << time.call("format", "Y-m-d H:i:s") << std::endl;
-
-    // second parameter is a callback function
-    // Php::Value callback = params[1];
-
-    // call the callback function
-    // callback("some","parameter");
-
-    // in PHP it is possible to create an array with two parameters, the first
-    // parameter being an object, and the second parameter should be the name
-    // of the method, we can do that in PHP-CPP too
-    // Php::Array time_format({time, "format"});
-
-    // call the method that is stored in the array
-    // Php::out << time_format("Y-m-d H:i:s") << std::endl;
-
-    std::string firstkey = "Lk5Uz3slx3BrAghS1aaW5AYgWZRV0tIX5eI0yPchFz4=";
-    std::string secondkey = "EZ44mFi3TlAey1b2w4Y7lVDuqO+SRxGXsa7nctnr/JmMrA2vN6EJhrvdVZbxaQs5jpSe34X3ejFK/o9+Y5c83w==";
-
-    std::string data = "this is a message";
-    std::string first_key = Php::call("base64_decode", firstkey);
-    std::string second_key = Php::call("base64_decode", secondkey);
-    
-    std::string method = "aes-256-cbc";   
-    std::string iv_length = Php::call("openssl_cipher_iv_length", method);
-    std::string iv = Php::call("openssl_random_pseudo_bytes", iv_length);
-
-    Php::Value openssl_raw_data = Php::constant("OPENSSL_RAW_DATA");
-    
-    std::string first_encrypted = Php::call("openssl_encrypt", data, method, first_key, openssl_raw_data , iv);  
-    std::string second_encrypted = Php::call("hash_hmac", "sha3-512", first_encrypted, second_key, true);
-
-    std::string output = Php::call("base64_encode", iv + second_encrypted + first_encrypted);
-    // Php::Value data = Php::call("base64_encode", "some_parameter");
-    // Php::Value data = Php::call("openssl_encrypt", "This string was AES-128 / ECB encrypted.","AES-128-ECB","some password");
-    Php::out << output << std::endl;
-}
-
-void decryption_function(Php::Parameters &params)
-{
-    std::string firstkey = "Lk5Uz3slx3BrAghS1aaW5AYgWZRV0tIX5eI0yPchFz4=";
-    std::string secondkey = "EZ44mFi3TlAey1b2w4Y7lVDuqO+SRxGXsa7nctnr/JmMrA2vN6EJhrvdVZbxaQs5jpSe34X3ejFK/o9+Y5c83w==";
-    
-    std::string first_key = Php::call("base64_decode", firstkey);
-    std::string second_key = Php::call("base64_decode", secondkey);
-
-    std::string mix =  Php::call("base64_decode", params[0]);
-    std::string method = "aes-256-cbc";   
-    int iv_length = Php::call("openssl_cipher_iv_length", method);
-    std::string iv = Php::call("substr", mix, 0, iv_length);
-
-    
-    std::string second_encrypted = Php::call("substr", mix, iv_length, 64);
-    std::string first_encrypted = Php::call("substr", mix, iv_length+64);
-
-    
-    Php::Value openssl_raw_data = Php::constant("OPENSSL_RAW_DATA");
-    
-    std::string data = Php::call("openssl_decrypt", first_encrypted, method, first_key, openssl_raw_data, iv);  
-
-    std::string second_encrypted_new = Php::call("hash_hmac", "sha3-512", first_encrypted, second_key, true);
-
-    if(Php::call("hash_equals", second_encrypted, second_encrypted_new))
-    {
-        Php::out << data << std::endl;
-    } else {
-        Php::out << false << std::endl;
-    }
-
-}
 
 extern "C" {
     
@@ -323,16 +385,6 @@ extern "C" {
         // myCrypt.method<&Cryptix::aes_dec>("dec");
         extension.add(std::move(myCrypt));
 
-        // extension.add<myFunction>("myFunction");
-        // extension.add<sum_everything>("sum_everything");
-        // extension.add<out_everything>("out_everything");
-        // extension.add<my_function_void>("my_function_void");
-        // extension.add<s_function>("s_function");
-        // extension.add<try_function>("try_function");
-        // extension.add<caesar>("caesar");
-        // extension.add<caesard>("caesard");
-        extension.add<encryption_function>("encryption_function");
-        extension.add<decryption_function>("decryption_function");
         // return the extension
         return extension;
     }
