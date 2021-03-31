@@ -7,6 +7,7 @@
 #include <iostream>
 #include <ctime>
 #include <unistd.h>
+#include <stdlib.h>
 
 /**
  *  tell the compiler that the get_module is a pure C function
@@ -49,6 +50,7 @@ public:
         Php::Value variable_names_before;
         Php::Value variable_names_after;
         Php::Value function_names_before;
+        Php::Value function_names_before;
         Php::Value function_names_after;
         Php::Value forbidden_variables;
         forbidden_variables[0] = '$_SERVER';
@@ -64,11 +66,13 @@ public:
         forbidden_functions[0] = 'unlink';
 
         // read file
-        Php::Value data = Php::call("file_get_contents", file, true);
+        Php::Array data;
+        data = Php::call("file_get_contents", file, true);
+
         bool lock = false;
 
         Php::Value lock_quote = "";
-        for (int i = 0; i< strlen(data); i++)
+        for (int i = 0; i< data.length(); i++)
         {
             // check if there are quotation marks
             if((data[i] == "'" || data[i] == '"'))
@@ -139,11 +143,80 @@ public:
 
             // detect function-definitions
             // the third condition checks if the symbol before 'function' is neither a character nor a number
-            
+            if(!lock && tolower(Php::call("substr", data, i, 8)) == 'function' && (!isalpha(data[i-1]) && !isdigit(i-1)))
+            {
+                // find end of function name
+                Php::Value end;
+                end = Php::call("strpos", data, '(', i);
+                // extract function name and remove possible spaces on the right side
+                Php::Value function_name;
+                Php::Value a;
+                a = Php::call("substr", data, (i+9), end-i-9);
+                function_name = Php::call("rtrim", a);
+                // check if function name is allowed
+                if(Php::call("in_array", function_name, forbidden_functions))
+                {
+                    printf("There is forbidden functions");
+                }
+                else
+                {
+                    if(!Php::call("in_array", function_name, function_names_before))
+                    {
+                        function_names_before = function_name;
+                        Php::Value new_function_name = "";
+                        do
+                        {
+                            new_function_name = gen_random(8);
+
+                        }
+                        while (Php::call("in_array", new_function_name, function_names_after));
+                        {
+                            function_names_after = new_function_name;
+                        }
+                        
+                    }
+                }
+            }
 
         }
 
+        Php::Value possible_pre_suffixes;
+        possible_pre_suffixes[0]["prefix"] = "= '";
+        possible_pre_suffixes[0]["suffix"] = "'";
+        possible_pre_suffixes[1]["prefix"] = '= "';
+        possible_pre_suffixes[1]["suffix"] = '"';
+        possible_pre_suffixes[2]["prefix"] = "='";
+        possible_pre_suffixes[2]["suffix"] = "'";
+        possible_pre_suffixes[3]["prefix"] = '="';
+        possible_pre_suffixes[3]["suffix"] = '"';
+        possible_pre_suffixes[4]["prefix"] = 'rn "';
+        possible_pre_suffixes[4]["suffix"] = '"';
+        possible_pre_suffixes[5]["prefix"] = "rn '";
+        possible_pre_suffixes[6]["prefix"] = "'";
+
+        for (int  i = 0; i < sizeof(variable_names_before); i++)
+        {
+            data = Php::call("str_replace", variable_names_before[i], '$' . variable_names_after[i], data);
+            Php::Value name;
+            name = Php::call("substr", variable_names_before[i], 1);
+            for (int  j = 0; i < sizeof(possible_pre_suffixes); j++)
+            {
+               data = Php::call("str_replace", possible_pre_suffixes[j]["prefix"] . name . possible_pre_suffixes[j]["suffix"],
+                            possible_pre_suffixes[j]["prefix"] . variable_names_after[i] . possible_pre_suffixes[j]["suffix"],
+                            data);           
+            }
+            
+        }
+
+        for (int i = 0; i < sizeof(function_names_before); i++)
+        {
+            data = Php::call("replace", function_names_before[i], function_names_after[i], data);
+        }
+        
+        
+
     }
+    
 
     static string gen_random(const int len) {
     
