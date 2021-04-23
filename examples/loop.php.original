@@ -1,8 +1,1 @@
-<?php
-$x = 1;
- 
-    while($x <= 5) {
-      echo "The number is: $x <br>";
-      $x++;
-     }
-?>
+<?php PHPCrypton::decode('bf-cbc', 'rRHPrX7wF86SQJ15c88ByKrSBpWNnbNJ/xiyl+DYYLpMNAKkGDQcfvbX1nMllYln0ciO2MPLfx8rctdYGk8n/LDH3TvjTQ8ELo0V5k1GCPLRbvDM0skDPm37Mu+3A/wXJ/pInK56qC/UyrW1w0RcEppmOzAgoh7nWaT33K7dCBCbhL3bEoj6/quk/vm+ktvm41Mgzk7wi2Bt0fS9QS++XuHxZYAi0lBsGjEW+zNxAzCy3osaBFfusfs9VgdyFqzXwf80SFgBngYPVJQjg/diBOTUxTNTpMqhswRTFWPqDM7djL/XzUrlGZRamRK8Bka4P3/3pNRueeTlp5dBOjkHs0lakYB8QLgO5a4dXsCUyzeoQX8hCoqLQdoXenw+6OxkpBjNzA4lYWdqSgKLHMKdbXtR5jFt+0MAtmi0J3ZlJreRlRM7pC88vodqhrt/UvzQ7p4aFDne3CU='); ?>
